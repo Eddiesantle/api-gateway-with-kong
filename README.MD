@@ -1,5 +1,29 @@
 # API Gateway e Kong na prática.
 
+## Guia Prático: Implementação de API Gateway com Kong
+Este guia detalha a implementação e utilização de um API Gateway usando o Kong, abordando desde conceitos fundamentais até a configuração prática. O objetivo é facilitar a gestão de APIs, centralizando a comunicação e adicionando camadas de segurança, autenticação, monitoramento e balanceamento de carga.
+
+## Instalação
+1. Clone o repositório:
+```bash
+git https://github.com/Eddiesantle/api-gateway-with-kong.git
+cd api-gateway-with-kong
+```
+
+2. Suba o container do Kong:
+```bash
+docker-compose up
+```
+
+3. Execute a API:
+```bash
+cd node-api
+```
+
+4. Instale as dependências:
+```bash
+npm install
+```
 
 ## Sem API Gateway
 <img src="assets/api-gateway-sem.png">
@@ -111,19 +135,20 @@ Normalmente a atuação se dá na camada de rede"</i>
 ## Pratica e implementação
 
 ### Endereços no Kong
-- http://localhost:8000/ - gateway de entrada das apis
-- http://localhost:8001/ - ADMIN API
-- http://localhost:8002/ - ADMIN GUI
+- Gateway de Entrada: http://localhost:8000/
+- Admin API: http://localhost:8001/
+- Admin GUI: http://localhost:8002/
 
-Criar projeto api basica com node
+#### Criar Projeto de API Básica
+1. Iniciar um projeto Node.js:
 ```bash
 npm init -y
 ```
-Instalar express
+2. Instalar o Express:
 ```bash
 npm install express
 ```
-Executar API
+3. Executar API
 ```bash
 node api.js
 ```
@@ -232,3 +257,75 @@ HMACSHA256(
 
 Liberado acesso a API
 <img src="assets/jwt-router.png">
+
+##### Criar Rate Limiting
+
+
+<i>Acessando>ADMIN GUI>Routes>Select Route>Plugins>new Plugin/Rate Limiting</i>
+
+Definir quantidade de requisição por tempo.
+
+Exemplo: 10 requisições por minuto - API rate limit exceeded
+<img src="assets/rate-limit-http.png">
+
+##### Criar Loadbalancer
+
+<img src="assets/admin_ha_config.png">
+
+###### Configurar Upstreams
+
+<i>Acessando>ADMIN GUI>Upstreams>New Upstream</i>
+
+Configurar os targests: replicas do serviçso que aceitam a chamada
+<i>Acessando>ADMIN GUI>Upstreams>Select Upstream> targets>New Target</i>
+
+Name: upstream-exemplo
+Target Address: host.docker.internal:3000
+Target Address: host.docker.internal:3001
+
+Rodar node-api na porta 3001
+```bash
+PORT=3001 node api.js
+```
+
+Para configurar os acessos
+<i>Acessando>ADMIN GUI>Gateway Services>New Gateway Service</i>
+
+General information will help identify and manage this Gateway Service.
+Name: upstream-exemplo
+Service Endpoint: (select) Protocol, Host, Port and Path
+Host: upstream-exemplo (IMPORTANTE: vai buscar mesmo nome do criado no Upstreams)
+
+Criar roteamento
+<i>Acessando>ADMIN GUI>Routes>New Route</i>
+
+General information will help you identify and manage this route
+Name:load-balancing
+Service: (Select) upstream-exemplo-....
+Route Configuration
+HTTP/HTTPSRouting Rules
+Paths: (/load-balancing)
+
+Acessando a rota:  
+
+A cada requisição é distribuido:
+
+http://localhost:8000/load-balancing
+<img src="assets/example-loadbalancing.png">
+
+##### Criar Telemetria
+
+Criar telemetria
+<i>Acessando>ADMIN GUI>Plugins>New Plugin>opentelemetry</i>
+
+
+
+### Conclusão
+Implementar um API Gateway com Kong não apenas melhora a segurança e a gestão das suas APIs, mas também facilita a adição de novas funcionalidades como autenticação, monitoramento e controle de tráfego. Esta abordagem torna a arquitetura de microsserviços mais robusta e escalável, reduzindo a complexidade e garantindo um melhor desempenho e segurança.
+
+### Proximo desafio
+- Integrar kong com  keycloak 
+
+### Referências
+[Kong API Gateway Documentation](https://docs.konghq.com/)
+[Node.js Express Documentation](https://expressjs.com/)
