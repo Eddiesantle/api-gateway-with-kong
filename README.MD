@@ -6,13 +6,24 @@ Este guia detalha a implementação e utilização de um API Gateway usando o Ko
 ## Instalação
 1. Clone o repositório:
 ```bash
-git https://github.com/Eddiesantle/api-gateway-with-kong.git
+git clone https://github.com/Eddiesantle/api-gateway-with-kong.git
 cd api-gateway-with-kong
 ```
 
-2. Suba o container do Kong:
+2. Suba o container do Kong com banco de dados:
 ```bash
-docker-compose up
+docker compose -f docker-compose.with-db.yml up -d
+```
+
+3. Suba o container do Kong com dbless:
+- Kong com dbless - gerar configuração kong.yaml:
+```bash
+docker run --add-host host.docker.internal:host-gateway --network host kong/deck:v1.37.0 gateway dump --kong-addr http://host.docker.interal:8001/
+```
+- Insira as configuração gerada com dbless no aquivo: */kong/declarative/kong.yaml*
+- Execute o container do Kong com dbless:
+```bash
+docker compose -f docker-compose.with-dbless.yaml up -d
 ```
 
 3. Execute a API:
